@@ -8,6 +8,7 @@
     "build:frontend": "cd frontend && npm run build",
     "seed": "cd backend && node utils/seed.js",
     "test:backend": "cd backend && node test-backend.js",
+    "test:chat": "cd backend && node test-chat.js",
     "install:all": "npm --prefix backend install && npm --prefix frontend install"
   },
   "keywords": ["devconnect", "mern", "developer-matchmaking"],

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import api from '../services/api';
 import { useToast } from './ToastContext';
+import { connectSocket, disconnectSocket } from '../services/socket';
 
 const AuthContext = createContext(null);
 
@@ -14,9 +15,11 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await api.get('/profile/view');
       setUser(response.data.data);
+      connectSocket();
       return response.data.data;
     } catch (error) {
       setUser(null);
+      disconnectSocket();
       return null;
     }
   }, []);
@@ -37,6 +40,7 @@ export const AuthProvider = ({ children }) => {
       const currentUser = await fetchProfile();
       if (currentUser) {
         await refreshPendingCount();
+        connectSocket();
       }
       setLoading(false);
     };
@@ -47,6 +51,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await api.post('/login', { emailId, password });
       setUser(response.data.data);
+      connectSocket();
       showToast(response.data.message || 'Logged in successfully!', 'success');
       await refreshPendingCount();
       return { success: true, user: response.data.data };
@@ -60,6 +65,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await api.post('/signup', userData);
       setUser(response.data.data);
+      connectSocket();
       showToast(response.data.message || 'Account created successfully!', 'success');
       await refreshPendingCount();
       return { success: true, user: response.data.data };
@@ -72,10 +78,12 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       await api.post('/logout');
+      disconnectSocket();
       setUser(null);
       setPendingCount(0);
       showToast('Logged out successfully', 'info');
     } catch (error) {
+      disconnectSocket();
       setUser(null);
       setPendingCount(0);
     }

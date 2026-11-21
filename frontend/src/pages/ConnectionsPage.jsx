@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
 import EmptyState from '../components/EmptyState';
 import { useToast } from '../context/ToastContext';
-import { Users, Mail, Copy, Check, Search, Calendar, Sparkles } from 'lucide-react';
+import { Users, Mail, Copy, Check, Search, Calendar, Sparkles, MessageSquare } from 'lucide-react';
 
 const ConnectionsPage = () => {
+  const navigate = useNavigate();
   const [connections, setConnections] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -146,9 +147,17 @@ const ConnectionsPage = () => {
 
                 {/* Contact Actions */}
                 <div className="pt-4 border-t border-slate-800/80 flex items-center gap-2">
+                  <button
+                    onClick={() => navigate('/chat', { state: { recipientId: conn._id } })}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-semibold text-white bg-purple-600 hover:bg-purple-500 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  >
+                    <MessageSquare className="w-3.5 h-3.5" />
+                    Chat
+                  </button>
+
                   <a
                     href={`mailto:${conn.emailId}?subject=DevConnect Collaboration`}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-semibold text-white bg-purple-600 hover:bg-purple-500 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                    className="flex items-center justify-center gap-1 py-2 px-3 rounded-xl text-xs font-semibold text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 transition-all"
                   >
                     <Mail className="w-3.5 h-3.5" />
                     Email

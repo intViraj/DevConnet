@@ -13,6 +13,7 @@ A full-stack developer networking/matchmaking platform — "Tinder for developer
 - **Connection Requests** — Send requests (`interested` / `ignored`) and review incoming ones (`accepted` / `rejected`)
 - **Feed API** — Paginated feed that excludes already-connected/requested users using efficient Set-based filtering
 - **Connections & Requests** — View accepted connections and pending incoming requests
+- **Real-Time One-to-One Chat** — Instant private messaging between developers powered by Socket.IO and permanent MongoDB message persistence with chat history
 - **Email Notifications** — Daily cron job (via `node-cron`) that emails users about new interested requests, powered by AWS SES
 - **Security** — Password field exclusion (`select: false`), input validation with `validator`, schema-level enum validation, compound indexing on connection requests, and duplicate-request prevention
 
@@ -22,8 +23,8 @@ A full-stack developer networking/matchmaking platform — "Tinder for developer
 
 | Layer | Technology |
 |---|---|
-| Frontend | React.js, Tailwind CSS, React Router DOM, Axios, Lucide Icons, Vite |
-| Runtime | Node.js, Express.js |
+| Frontend | React.js, Tailwind CSS, React Router DOM, Axios, Socket.IO Client, Lucide Icons, Vite |
+| Runtime | Node.js, Express.js, Socket.IO |
 | Database | MongoDB with Mongoose |
 | Auth | JWT, bcrypt, cookie-parser |
 | Validation | validator.js |
@@ -44,28 +45,35 @@ DevConnect/
 │   │   └── auth.js               # JWT verification middleware
 │   ├── model/
 │   │   ├── user.js                # User schema + JWT instance method
-│   │   └── connectionRequest.js   # Connection request schema + pre-save hook
+│   │   ├── connectionRequest.js   # Connection request schema + pre-save hook
+│   │   ├── conversation.js        # One-to-one conversation schema
+│   │   └── message.js             # Chat message schema with conversationId ref
 │   ├── routes/
 │   │   ├── auth.js                # Signup / Login / Logout
 │   │   ├── profile.js             # Profile view / edit / password update
 │   │   ├── request.js             # Send / review connection requests
-│   │   └── user.js                # Feed, connections, received requests
+│   │   ├── user.js                # Feed, connections, received requests
+│   │   └── chat.js                # Conversations & message history APIs
 │   ├── utils/
 │   │   ├── validation.js          # Signup & profile edit validators
 │   │   ├── sendEmail.js           # SES email sender
 │   │   ├── sesClient.js           # SES client config
 │   │   ├── cronJobs.js            # Daily notification cron job
 │   │   └── seed.js                # Database seed script with sample devs
-│   ├── test-backend.js            # Automated integration test suite
+│   ├── socket.js                  # Socket.IO configuration & JWT auth
+│   ├── test-backend.js            # Core backend automated tests
+│   ├── test-chat.js               # Real-time chat & socket automated test suite
 │   ├── .env                       # Backend environment configuration
-│   └── app.js                     # Backend Express entry point
+│   └── app.js                     # Express + Socket.IO HTTP server entry point
 │
 └── frontend/
     ├── src/
     │   ├── components/            # Reusable UI (Navbar, DeveloperCard, Footer, Spinner, etc.)
     │   ├── context/               # AuthContext & ToastContext providers
-    │   ├── pages/                 # Feed, Requests, Connections, Profile, Auth, 404
-    │   ├── services/              # Centralized Axios API client
+    │   ├── pages/                 # Feed, Requests, Connections, Chat, Profile, Auth, 404
+    │   ├── services/
+    │   │   ├── api.js             # Centralized Axios API client
+    │   │   └── socket.js          # Centralized Socket.IO client manager
     │   ├── App.jsx                # Main application routes & layout
     │   └── main.jsx               # React entry point
     ├── index.html                 # HTML5 template
@@ -103,6 +111,21 @@ DevConnect/
 | GET | `/user/connections` | Get all accepted connections | 
 | GET | `/user/feed` | Paginated feed of discoverable users |
 
+### Chat & Messaging
+| Method | Endpoint | Description | Auth |
+|---|---|---|---|
+| POST | `/chat/conversation` | Create or retrieve a 1-to-1 conversation | ✓ |
+| GET | `/chat/conversations` | Get all conversations of logged-in user | ✓ |
+| GET | `/chat/messages/:conversationId` | Fetch message history for conversation | ✓ |
+
+### Socket.IO Real-Time Events
+| Event Name | Direction | Payload | Description |
+|---|---|---|---|
+| `join_conversation` | Client ➔ Server | `{ conversationId }` | Authenticated participant joins conversation room |
+| `send_message` | Client ➔ Server | `{ conversationId, content }` | Sender posts a message to be saved and broadcast |
+| `receive_message` | Server ➔ Client | `{ _id, conversationId, sender, content, createdAt }` | Real-time broadcast to room participants |
+| `message_error` | Server ➔ Client | `{ message }` | Real-time validation / authorization error alert |
+
 ---
 
 ## ⚙️ Environment Variables
@@ -138,10 +161,13 @@ npm run seed
 # 3. Run automated backend integration verification
 npm run test:backend
 
-# 4. Start Backend Server (runs on http://localhost:7777)
+# 4. Run automated real-time chat & Socket.IO test suite
+npm run test:chat
+
+# 5. Start Backend Server (runs on http://localhost:7777)
 npm run start:backend
 
-# 5. In a separate terminal, start Frontend Dev Server (runs on http://localhost:5173)
+# 6. In a separate terminal, start Frontend Dev Server (runs on http://localhost:5173)
 npm run start:frontend
 ```
 

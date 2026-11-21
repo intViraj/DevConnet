@@ -10,7 +10,8 @@ import {
   Menu, 
   X,
   Code2,
-  Bell
+  Bell,
+  MessageSquare
 } from 'lucide-react';
 
 const Navbar = () => {
@@ -28,6 +29,7 @@ const Navbar = () => {
   const navLinks = [
     { name: 'Feed', path: '/', icon: Flame },
     { name: 'Connections', path: '/connections', icon: Users },
+    { name: 'Chat', path: '/chat', icon: MessageSquare },
     { 
       name: 'Requests', 
       path: '/requests', 

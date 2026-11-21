@@ -154,21 +154,26 @@ async function testBackend() {
   }
 }
 
-// Check if server is already running, or start it
+// Check if server is already running, or start and wait for it
 async function startAndTest() {
-  try {
-    const res = await fetch('http://localhost:7777/health');
-    if (res.ok) {
-      console.log('Server already running on port 7777, running tests directly...');
-      await testBackend();
-      return;
+  require('./app');
+
+  // Poll for health check
+  for (let i = 0; i < 20; i++) {
+    try {
+      const res = await fetch('http://localhost:7777/health');
+      if (res.ok) {
+        await testBackend();
+        return;
+      }
+    } catch (e) {
+      // Wait a bit
+      await new Promise((r) => setTimeout(r, 500));
     }
-  } catch (e) {
-    // Server not running, let's start it
   }
 
-  require('./app');
-  setTimeout(testBackend, 2000);
+  console.error('Server failed to start in time.');
+  process.exit(1);
 }
 
 startAndTest();

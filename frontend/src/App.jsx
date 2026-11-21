@@ -11,6 +11,7 @@ import FeedPage from './pages/FeedPage';
 import RequestsPage from './pages/RequestsPage';
 import ConnectionsPage from './pages/ConnectionsPage';
 import ProfilePage from './pages/ProfilePage';
+import ChatPage from './pages/ChatPage';
 import AuthPage from './pages/AuthPage';
 import NotFoundPage from './pages/NotFoundPage';
 
@@ -49,6 +50,22 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <ConnectionsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/chat"
+                  element={
+                    <ProtectedRoute>
+                      <ChatPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/chat/:conversationId"
+                  element={
+                    <ProtectedRoute>
+                      <ChatPage />
                     </ProtectedRoute>
                   }
                 />

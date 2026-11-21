@@ -1,16 +1,20 @@
 require('dotenv').config();
+const http = require('http');
 const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const connectDB = require('./config/database');
 const { initCronJobs } = require('./utils/cronJobs');
+const { initializeSocket } = require('./socket');
 
 const authRouter = require('./routes/auth');
 const profileRouter = require('./routes/profile');
 const requestRouter = require('./routes/request');
 const userRouter = require('./routes/user');
+const chatRouter = require('./routes/chat');
 
 const app = express();
+const server = http.createServer(app);
 const PORT = process.env.PORT || 7777;
 
 // Configure CORS
@@ -54,11 +58,16 @@ app.use('/', authRouter);
 app.use('/', profileRouter);
 app.use('/', requestRouter);
 app.use('/', userRouter);
+app.use('/', chatRouter);
 
 app.use('/api', authRouter);
 app.use('/api', profileRouter);
 app.use('/api', requestRouter);
 app.use('/api', userRouter);
+app.use('/api', chatRouter);
+
+// Initialize Socket.IO on the HTTP server
+const io = initializeSocket(server, allowedOrigins);
 
 // Global 404 handler
 app.use('*', (req, res) => {
@@ -75,7 +84,7 @@ app.use((err, req, res, next) => {
 connectDB()
   .then(() => {
     initCronJobs();
-    app.listen(PORT, () => {
+    server.listen(PORT, () => {
       console.log(`🚀 DevConnect server is running on http://localhost:${PORT}`);
     });
   })
@@ -83,4 +92,4 @@ connectDB()
     console.error('Database connection failed, server cannot start:', err.message);
   });
 
-module.exports = app;
+module.exports = { app, server, io };
