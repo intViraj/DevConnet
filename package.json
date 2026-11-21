@@ -1,0 +1,16 @@
+{
+  "name": "devconnect-platform",
+  "version": "1.0.0",
+  "description": "DevConnect - Tinder for Developers (MERN Full Stack)",
+  "scripts": {
+    "start:backend": "cd backend && npm start",
+    "start:frontend": "cd frontend && npm run dev",
+    "build:frontend": "cd frontend && npm run build",
+    "seed": "cd backend && node utils/seed.js",
+    "test:backend": "cd backend && node test-backend.js",
+    "install:all": "npm --prefix backend install && npm --prefix frontend install"
+  },
+  "keywords": ["devconnect", "mern", "developer-matchmaking"],
+  "author": "DevConnect Team",
+  "license": "ISC"
+}
